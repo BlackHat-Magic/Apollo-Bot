@@ -1,1 +1,3 @@
-# Apollo-Bot\n\nDiscord music bot
+# Apollo-Bot
+
+Discord music bot
