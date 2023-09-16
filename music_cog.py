@@ -220,6 +220,24 @@ class MusicCog(commands.Cog):
         self.music_queue = []
         await self.vc.disconnect()
         await interaction.response.send_message("Disconnected.")
+    
+    @app_commands.command(name="remove", description="remove")
+    async def remove(self, interaction: discord.Interaction, position: int) -> None:
+        if(position > len(self.music_queue)):
+            await interaction.response.send_message(
+                f"Only {len(self.music_queue)} items in queue.",
+                ephemeral=True
+            )
+            return
+        if(position < 1):
+            await interaction.response.send_message(
+                "Invalid queue position specified.",
+                ephemeral=True
+            )
+            return
+        removed = self.music_queue.pop(position - 1)
+        embed = self.now_playing_embed("Removed from Queue", discord.Color.from_rgb(192, 0, 0), removed[0])
+        await interaction.response.send_message(f"{removed[0]['video_title']} removed from queue.", embed=embed)
 
     # youtube
     # youtube music
