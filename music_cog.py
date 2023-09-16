@@ -1,7 +1,7 @@
 from yt_dlp import YoutubeDL as YouTubeDL
 from discord import app_commands
 from discord.ext import commands
-import discord, math, asyncio
+import discord, math, asyncio, random
 
 class MusicCog(commands.Cog):
     def __init__(self, client):
@@ -20,6 +20,8 @@ class MusicCog(commands.Cog):
         self.loop_queue = []
         self.is_looping = False
         self.add_current_to_loop = True
+
+        self.shuffle = False
 
         # options
         self.ytdl_options = {
@@ -62,14 +64,24 @@ class MusicCog(commands.Cog):
         if(len(self.music_queue) > 0 or self.is_looping):
             print(self.now_playing)
             self.is_playing = True
-            if(self.is_looping):
-                if(self.add_current_to_loop):
-                    self.loop_queue.append(self.now_playing)
-                self.add_current_to_loop = True
-                if(len(self.loop_queue) > 0):
-                    self.now_playing = self.loop_queue.pop(0)
+            if(self.shuffle):
+                if(self.is_looping):
+                    if(self.add_current_to_loop):
+                        self.loop_queue.append(self.now_playing)
+                    self.now_playing = self.loop_queue.pop(random.randint(0, len(self.loop_queue) - 1))
+                else:
+                    self.now_playing = self.music_queue.pop(random.randint(0, len(self.music_queue) - 1))
             else:
-                self.now_playing = self.music_queue.pop(0)
+                # if looping, get from loop queue
+                if(self.is_looping):
+                    if(self.add_current_to_loop):
+                        self.loop_queue.append(self.now_playing)
+                    self.add_current_to_loop = True
+                    if(len(self.loop_queue) > 0):
+                        self.now_playing = self.loop_queue.pop(0)
+                # else, get from normal queue
+                else:
+                    self.now_playing = self.music_queue.pop(0)
             playing_url = self.now_playing[0]["source"]
             self.vc.play(
                 discord.FFmpegPCMAudio(playing_url, **self.ffmpeg_options),
@@ -182,6 +194,14 @@ class MusicCog(commands.Cog):
         else:
             self.vc.stop()
             await interaction.response.send_message("Skipped.")
+    
+    @app_commands.command(name="shuffle", description="shuffle")
+    async def shuffle(self, interaction: discord.Interaction) -> None:
+        self.shuffle = not self.shuffle
+        if(self.shuffle):
+            await interaction.response.send_message("Queue is now shuffling.")
+        else:
+            await interaction.response.send_message("Queue is no longer shuffling.")
         
     @app_commands.command(name="queue", description="queue")
     async def queue(self, interaction: discord.Interaction, page: int=1) -> None:
@@ -197,6 +217,11 @@ class MusicCog(commands.Cog):
             title=f"Queue",
             color=discord.Color.from_rgb(128, 0, 255)
         )
+        if(self.shuffle):
+            embed.add_field(
+                name=""
+                value="Queue is shuffling; this is not the order it will play in."
+            )
         now_playing = self.now_playing[0]
         embed.add_field(
             name="Now Playing",
@@ -280,6 +305,9 @@ class MusicCog(commands.Cog):
     @app_commands.command(name="loopqueue", description="Loop queue")
     async def loopqueue(self, interaction: discord.Interaction, page: int = 1) -> None:
         queue_pages = int(math.ceil(len(self.loop_queue) / 10))
+        if(not self.is_looping):
+            await interaction.response.send_message("Not currently looping.", ephemeral=True)
+            return
         if(len(self.loop_queue) < 1):
             await interaction.response.send_message("Loop qeueu is empty.", ephemeral=True)
             return
@@ -291,6 +319,11 @@ class MusicCog(commands.Cog):
             title=f"Loop Queue",
             color=discord.Color.from_rgb(0, 255, 192)
         )
+        if(self.shuffle):
+            embed.add_field(
+                name=""
+                value="Queue is shuffling; this is not the order it will play in."
+            )
         now_playing = self.now_playing[0]
         embed.add_field(
             name="Now Playing",
