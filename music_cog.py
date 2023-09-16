@@ -219,7 +219,7 @@ class MusicCog(commands.Cog):
         )
         if(self.shuffle):
             embed.add_field(
-                name=""
+                name="",
                 value="Queue is shuffling; this is not the order it will play in."
             )
         now_playing = self.now_playing[0]
@@ -321,7 +321,7 @@ class MusicCog(commands.Cog):
         )
         if(self.shuffle):
             embed.add_field(
-                name=""
+                name="",
                 value="Queue is shuffling; this is not the order it will play in."
             )
         now_playing = self.now_playing[0]
