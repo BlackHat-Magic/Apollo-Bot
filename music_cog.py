@@ -4,6 +4,9 @@ from discord.ext import commands
 import discord, math, asyncio, random
 
 class MusicCog(commands.Cog):
+    """
+    Cog for the bot that handles music
+    """
     def __init__(self, client):
         self.bot = client
 
@@ -183,6 +186,9 @@ class MusicCog(commands.Cog):
 
     @app_commands.command(name="play", description="play")
     async def play(self, interaction: discord.Interaction, query: str) -> None:
+        """
+        Add something to queue and play if not playing anything
+        """
         await interaction.response.defer()
         voice_channel = interaction.user.voice.channel
         if voice_channel is None:
