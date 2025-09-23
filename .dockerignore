@@ -1,0 +1,9 @@
+.dockerignore
+README.md
+LICENSE.md
+.git
+.gitignore
+**/__pycache__
+env/
+.env.example.
+env
